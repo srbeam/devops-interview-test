@@ -3,7 +3,7 @@ name: Build and Deploy Frontend & Backend
 on:
   push:
     tags:
-      - 'v*'  # Trigger pipeline เมื่อสร้าง tag ที่ขึ้นต้นด้วย v เช่น v1.0.0
+      - 'v*'
 
 jobs:
   build:
@@ -63,7 +63,7 @@ jobs:
 
       - name: Update backend image in ArgoCD manifests
         run: |
-          sed -i "s|image: mysarisa/backend:.*|image: mysarisa/backend:${{ env.VERSION }}|" argocd/backend-app.yaml
+          sed -i "s|image: mysarisa/backend:.*|image: mysarisa/backend:${{ env.VERSION }}|" ./argocd/backend-app.yaml
           git add argocd/backend-app.yaml
           git commit -m "Update backend image to version ${{ env.VERSION }}" || echo "No changes to commit"
           git push origin main
