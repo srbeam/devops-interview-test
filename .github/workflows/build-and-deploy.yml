@@ -69,7 +69,7 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
           git commit -am "Update backend image to version ${{ env.VERSION }}"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/srbeam/backend.git
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
