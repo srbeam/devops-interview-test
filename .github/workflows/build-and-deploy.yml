@@ -63,7 +63,9 @@ jobs:
 
       - name: Update backend image in ArgoCD manifests
         run: |
-          sed -i "s|image: mysarisa/backend:.*|image: mysarisa/backend:${{ env.VERSION }}|" devops-interview-test/argocd/backend-app.yaml
+          git clone https://github.com/srbeam/backend.git
+          cd backend
+          sed -i "s|image: mysarisa/backend:.*|image: mysarisa/backend:${{ env.VERSION }}|" manifests/deployment.yaml
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
           git commit -am "Update backend image to version ${{ env.VERSION }}"
