@@ -63,13 +63,15 @@ jobs:
 
       - name: Update backend image in ArgoCD manifests
         run: |
-          git clone https://github.com/srbeam/backend.git
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/srbeam/backend.git
           cd backend
           sed -i "s|image: mysarisa/backend:.*|image: mysarisa/backend:${{ env.VERSION }}|" manifests/deployment.yaml
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
           git commit -am "Update backend image to version ${{ env.VERSION }}"
-          git push
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/srbeam/backend.git
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update frontend image in ArgoCD manifests
         run: |
