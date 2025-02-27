@@ -53,19 +53,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git User
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
 
       - name: Update backend image in ArgoCD manifests
         run: |
           sed -i "s|image: mysarisa/backend:.*|image: mysarisa/backend:${{ env.VERSION }}|" argocd/backend-app.yaml
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git commit -am "Update backend image to version ${{ env.VERSION }}"
-          git push
+          git add argocd/backend-app.yaml
+          git commit -m "Update backend image to version ${{ env.VERSION }}" || echo "No changes to commit"
+          git push origin main
 
       - name: Update frontend image in ArgoCD manifests
         run: |
           sed -i "s|image: mysarisa/frontend:.*|image: mysarisa/frontend:${{ env.VERSION }}|" argocd/frontend-app.yaml
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git commit -am "Update frontend image to version ${{ env.VERSION }}"
-          git push
+          git add argocd/frontend-app.yaml
+          git commit -m "Update frontend image to version ${{ env.VERSION }}" || echo "No changes to commit"
+          git push origin main
+
+      - name: Sync ArgoCD Applications
+        run: |
+          argocd app sync backend-app
+          argocd app sync frontend-app
