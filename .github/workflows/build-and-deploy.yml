@@ -1,20 +1,29 @@
-name: Build and Push to AWS ECR
+name: Build and Push Docker Images to AWS ECR
 
 on:
   push:
     tags:
-      - 'v*'  # Runs on version tags like v1.0.0
+      - "v*"  # Trigger pipeline เมื่อสร้าง tag ที่ขึ้นต้นด้วย v เช่น v1.0.0
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Checkout frontend repository
+        uses: actions/checkout@v3
+        with:
+          repository: srbeam/frontend
+          path: frontend
+
+      - name: Checkout backend repository
+        uses: actions/checkout@v3
+        with:
+          repository: srbeam/backend
+          path: backend
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -23,30 +32,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
+      - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Extract version from tag
-        id: extract_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Build and push backend image
+      # Build and Push Backend Image
+      - name: Build and Push Backend Image to ECR
+        env:
+          AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
+          AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}
+          VERSION: latest
         run: |
-          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}:${{ env.VERSION }} ./backend
-          docker push ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}:${{ env.VERSION }}
+          docker build -t $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION ./backend
+          docker push $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION
 
-      - name: Build and push frontend image
+      # Build and Push Frontend Image
+      - name: Build and Push Frontend Image to ECR
+        env:
+          AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
+          AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_FRONTEND }}
+          VERSION: latest
         run: |
-          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_FRONTEND }}:${{ env.VERSION }} ./frontend
-          docker push ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_FRONTEND }}:${{ env.VERSION }}
-
-      # # (Optional) Security Scan using Trivy
-      # - name: Security Scan with Trivy
-      #   continue-on-error: true
-      #   run: |
-      #     docker pull ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}:${{ env.VERSION }}
-      #     trivy image --exit-code 1 --severity CRITICAL,HIGH ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}:${{ env.VERSION }}
-
-      #     docker pull ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_FRONTEND }}:${{ env.VERSION }}
-      #     trivy image --exit-code 1 --severity CRITICAL,HIGH ${{ secrets.AWS_ECR_REGISTRY }}/${{ secrets.AWS_ECR_REPOSITORY_FRONTEND }}:${{ env.VERSION }}
+          docker build -t $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION ./frontend
+          docker push $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION
