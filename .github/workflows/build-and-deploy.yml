@@ -42,7 +42,7 @@ jobs:
         env:
           AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
           AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}
-          VERSION: ${{ github.run_number }}
+          VERSION: v1.0.${{ github.run_number }}
         run: |
           docker build -t $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION ./backend
           docker push $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION
