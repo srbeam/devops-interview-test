@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -42,7 +42,7 @@ jobs:
         env:
           AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
           AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_BACKEND }}
-          VERSION: latest
+          VERSION: ${{ github.run_number }}
         run: |
           docker build -t $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION ./backend
           docker push $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION
@@ -52,7 +52,7 @@ jobs:
         env:
           AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
           AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY_FRONTEND }}
-          VERSION: latest
+          VERSION: ${{ github.run_number }}
         run: |
           docker build -t $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION ./frontend
           docker push $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$VERSION
