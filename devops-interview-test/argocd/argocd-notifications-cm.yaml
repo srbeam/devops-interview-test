@@ -1,0 +1,57 @@
+apiVersion: v1
+data:
+  service.slack: |
+    tokenFrom:
+      secretKeyRef:
+        name: argocd-notifications-secret
+        key: slack-webhook-url
+
+  template.app-degraded: |
+    message: |
+      ArgoCD Application Degraded!
+      Application **{{.app.metadata.name}}** is in a degraded state.
+    slack:
+      attachment:
+        text: "*Application:* {{.app.metadata.name}}\n*Health Status:* {{.app.status.health.status}}"
+        color: "#ffcc00"
+
+  template.app-sync-failed: |
+    message: |
+      ArgoCD Sync Failed!
+      Application **{{.app.metadata.name}}** failed to sync.
+    slack:
+      attachment:
+        text: "*Application:* {{.app.metadata.name}}\n*Sync Status:* {{.app.status.sync.status}}\n*Error:* {{.context.message}}"
+        color: "#ff0000"
+
+  template.app-sync-succeeded: |
+    message: |
+      ArgoCD Sync Successful!
+      Application **{{.app.metadata.name}}** has been successfully synced.
+    slack:
+      attachment:
+        text: "*Application:* {{.app.metadata.name}}\n*Sync Status:* {{.app.status.sync.status}}"
+        color: "#36a64f"
+
+  trigger.on-degraded: |
+    - description: Application is degraded
+      send:
+        - slack
+      when: app.status.health.status == 'Degraded'
+
+  trigger.on-sync-failed: |
+    - description: Application failed to sync
+      send:
+        - slack
+      when: app.status.sync.status == 'OutOfSync' && app.status.operationState.phase in ['Error', 'Failed']
+
+  trigger.on-sync-succeeded: |
+    - description: Application has been successfully synced
+      send:
+        - slack
+      when: app.status.sync.status == 'Synced'
+
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
