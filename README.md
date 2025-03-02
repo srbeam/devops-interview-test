@@ -7,7 +7,6 @@
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [Terraform](https://developer.hashicorp.com/terraform/downloads)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
-- [Helm](https://helm.sh/)
 - [ArgoCD CLI](https://argo-cd.readthedocs.io/en/stable/cli_installation/)
 
 ### Step 1: VPC Setup
